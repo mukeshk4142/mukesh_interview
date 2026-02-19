@@ -31,8 +31,8 @@ const DashboardNavbar = () => {
   return (
     <nav className="h-20 border-b border-slate-200 bg-white/80 backdrop-blur-2xl fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-8">
       <div className="flex items-center space-x-4">
-        <Link to="/" className="text-2xl font-black text-slate-900 tracking-tighter">
-          MK.<span className="text-indigo-600">ADMIN</span>
+        <Link to="/" className="text-2xl font-bold text-slate-900">
+          MK.<span className="text-indigo-600">admin</span>
         </Link>
       </div>
       
@@ -57,7 +57,7 @@ const DashboardNavbar = () => {
             localStorage.removeItem('isAuthenticated');
             window.location.href = '/';
           }}
-          className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-100 transition-all text-[10px] font-black uppercase tracking-widest text-red-600"
+          className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-100 transition-all text-xs font-semibold text-red-600"
         >
           <LogOut size={14} />
           <span>Logout</span>
@@ -78,12 +78,12 @@ const StatCard = ({ title, value, icon, color, trend, delay = 0 }: { title: stri
     <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-[80px] opacity-10 group-hover:opacity-20 transition-opacity -mr-16 -mt-16 ${color}`} />
     <div className="flex items-start justify-between relative z-10">
       <div className="space-y-3">
-        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">{title}</p>
+        <p className="text-slate-500 text-xs font-semibold uppercase">{title}</p>
         <h3 className="text-3xl font-bold tracking-tight text-slate-900">{value}</h3>
         {trend && (
           <div className="flex items-center space-x-2 bg-slate-50 px-2 py-1 rounded-lg w-fit border border-slate-100">
             <TrendingUp size={12} className="text-indigo-600" />
-            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{trend}</span>
+            <span className="text-xs font-semibold text-indigo-600">{trend}</span>
           </div>
         )}
       </div>
@@ -246,7 +246,7 @@ export const AdminDashboard = () => {
                 }
                 setActiveTab(item.id);
               }}
-              className={`w-full flex items-center justify-between px-6 py-4 rounded-2xl transition-all font-black text-[10px] uppercase tracking-[0.2em] group ${
+              className={`w-full flex items-center justify-between px-6 py-4 rounded-2xl transition-all font-semibold text-sm group ${
                 activeTab === item.id 
                   ? "bg-indigo-600 text-white shadow-xl shadow-indigo-100" 
                   : "text-slate-400 hover:bg-slate-50 hover:text-slate-900"
@@ -267,7 +267,7 @@ export const AdminDashboard = () => {
           <div className="pt-10 space-y-6">
              <div className="p-6 rounded-[2rem] bg-slate-50 border border-slate-200 relative overflow-hidden group">
                 <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900">Resume Vault</h4>
+                  <h4 className="text-sm font-semibold text-slate-900">Resume Vault</h4>
                   <label className="cursor-pointer p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
                     <Plus size={14} />
                     <input 
@@ -288,14 +288,14 @@ export const AdminDashboard = () => {
                     />
                   </label>
                 </div>
-                <p className="text-[9px] text-slate-400 font-bold leading-relaxed">UPLOAD YOUR LATEST CV TO SYNCHRONIZE WITH THE MAIN PORTFOLIO DOWNLOAD BUTTON.</p>
+                <p className="text-xs text-slate-400 font-medium leading-relaxed">UPLOAD YOUR LATEST CV TO SYNCHRONIZE WITH THE MAIN PORTFOLIO DOWNLOAD BUTTON.</p>
              </div>
 
              <div className="p-8 rounded-[2rem] bg-indigo-50 border border-indigo-100 relative overflow-hidden group cursor-pointer" onClick={() => navigate('/')}>
                 <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-200/50 rounded-full blur-2xl -mr-10 -mt-10" />
                 <Zap className="text-indigo-600 mb-4 group-hover:scale-110 transition-transform" size={24} />
-                <h4 className="text-xs font-black uppercase tracking-widest mb-2 text-slate-900">View Portfolio</h4>
-                <p className="text-[10px] text-slate-500 font-medium">Click to return to your public landing page.</p>
+                <h4 className="text-sm font-semibold mb-2 text-slate-900">View Portfolio</h4>
+                <p className="text-xs text-slate-500 font-medium">Click to return to your public landing page.</p>
              </div>
           </div>
         </aside>
@@ -337,11 +337,11 @@ export const AdminDashboard = () => {
                     <p className="text-slate-500 font-semibold text-sm">Interview Pipeline Overview</p>
                   </motion.div>
                   <div className="flex items-center gap-4">
-                    <Link to="/admin/hr" className="flex items-center space-x-3 px-8 py-4 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all text-[10px] font-black uppercase tracking-widest text-slate-600 shadow-sm">
+                    <Link to="/admin/hr" className="flex items-center space-x-3 px-8 py-4 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all text-xs font-semibold text-slate-600 shadow-sm">
                       <Plus size={16} />
                       <span>New Entry</span>
                     </Link>
-                    <Link to="/admin/hr" className="flex items-center space-x-3 px-8 py-4 bg-indigo-600 text-white rounded-2xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all text-[10px] font-black uppercase tracking-widest">
+                    <Link to="/admin/hr" className="flex items-center space-x-3 px-8 py-4 bg-indigo-600 text-white rounded-2xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all text-xs font-semibold">
                       <Target size={16} />
                       <span>Scheduler</span>
                     </Link>
@@ -385,7 +385,7 @@ export const AdminDashboard = () => {
                           <button 
                             key={btn.id}
                             onClick={() => setTimeframe(btn.id as any)}
-                            className={`px-6 py-2.5 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all ${timeframe === btn.id ? "bg-indigo-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-900"}`}
+                            className={`px-6 py-2.5 text-xs font-semibold rounded-xl transition-all ${timeframe === btn.id ? "bg-indigo-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-900"}`}
                           >
                             {btn.label}
                           </button>
@@ -465,7 +465,7 @@ export const AdminDashboard = () => {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
                   <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                     <h1 className="text-3xl font-bold mb-2 tracking-tight uppercase text-slate-900">Message <span className="text-indigo-600 italic">Inbox.</span></h1>
-                    <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Client & Recruiter Submissions</p>
+                    <p className="text-slate-500 font-semibold text-xs">Client & Recruiter Submissions</p>
                   </motion.div>
                 </div>
 
@@ -479,7 +479,7 @@ export const AdminDashboard = () => {
                       className={`bg-white border ${msg.isNew ? 'border-indigo-500 ring-4 ring-indigo-500/5' : 'border-slate-200'} rounded-[2.5rem] p-8 shadow-sm hover:shadow-xl hover:shadow-slate-200 transition-all duration-500 relative`}
                     >
                       {msg.isNew && (
-                        <div className="absolute top-8 right-16 px-3 py-1 bg-indigo-600 text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg shadow-indigo-200">
+                        <div className="absolute top-8 right-16 px-3 py-1 bg-indigo-600 text-white text-xs font-semibold rounded-full shadow-lg shadow-indigo-200">
                           NEW MESSAGE
                         </div>
                       )}
@@ -491,7 +491,7 @@ export const AdminDashboard = () => {
                             </div>
                             <div>
                               <h4 className="text-lg font-bold text-slate-900">{msg.name}</h4>
-                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{new Date(msg.date).toLocaleString()}</p>
+                              <p className="text-xs font-semibold text-slate-400">{new Date(msg.date).toLocaleString()}</p>
                             </div>
                           </div>
                           
@@ -529,7 +529,7 @@ export const AdminDashboard = () => {
                       <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
                         <Inbox size={32} className="text-slate-300" />
                       </div>
-                      <p className="text-slate-400 font-black uppercase tracking-widest text-xs">
+                      <p className="text-slate-400 font-semibold text-xs">
                         Your communication matrix is currently quiet.
                       </p>
                     </div>

@@ -100,30 +100,45 @@ export const AdminDashboard = () => {
   const [hrRecords, setHrRecords] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [timeframe, setTimeframe] = useState<"thisWeek" | "nextWeek" | "history">("thisWeek");
+  const [loading, setLoading] = useState(true);
   const currentUser = auth.currentUser;
 
   // Load HR records from Firestore in real-time
   useEffect(() => {
-    if (!currentUser) return;
+    // Wait for auth to be ready
+    const unsubscribeAuth = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        setHrRecords([]);
+        setLoading(false);
+        return;
+      }
 
-    const q = query(
-      collection(db, "hrRecords"),
-      where("userId", "==", currentUser.uid)
-    );
+      setLoading(true);
+      const q = query(
+        collection(db, "hrRecords"),
+        where("userId", "==", user.uid)
+      );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const records: any[] = [];
-      snapshot.forEach((doc) => {
-        records.push({
-          ...doc.data(),
-          id: doc.id
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const records: any[] = [];
+        snapshot.forEach((doc) => {
+          records.push({
+            ...doc.data(),
+            id: doc.id
+          });
         });
+        setHrRecords(records);
+        setLoading(false);
+      }, (error) => {
+        console.error("Error loading records:", error);
+        setLoading(false);
       });
-      setHrRecords(records);
+
+      return () => unsubscribe();
     });
 
-    return () => unsubscribe();
-  }, [currentUser]);
+    return () => unsubscribeAuth();
+  }, []);
 
   // Load messages from localStorage
   useEffect(() => {
@@ -311,10 +326,25 @@ export const AdminDashboard = () => {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <StatCard title="Active Pipeline" value={totalScheduled.toString()} icon={<Calendar size={24} />} color="bg-indigo-500" trend={`${totalScheduled} Scheduled`} delay={0.1} />
-                  <StatCard title="Successful Rounds" value={totalCleared.toString()} icon={<CheckCircle size={24} />} color="bg-emerald-500" trend={`${totalCleared} Pass Rate`} delay={0.2} />
-                  <StatCard title="Awaiting Feedback" value={pendingReview.toString()} icon={<Clock size={24} />} color="bg-amber-500" delay={0.3} />
-                  <StatCard title="Total Contacts" value={hrRecords.length.toString()} icon={<Users size={24} />} color="bg-sky-500" delay={0.4} />
+                  {loading ? (
+                    // Loading skeleton
+                    <>
+                      {[0, 1, 2, 3].map((idx) => (
+                        <div key={idx} className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                          <div className="h-4 bg-slate-200 rounded animate-pulse mb-3 w-1/2"></div>
+                          <div className="h-8 bg-slate-200 rounded animate-pulse mb-2 w-3/4"></div>
+                          <div className="h-3 bg-slate-100 rounded animate-pulse"></div>
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      <StatCard title="Active Pipeline" value={totalScheduled.toString()} icon={<Calendar size={24} />} color="bg-indigo-500" trend={`${totalScheduled} Scheduled`} delay={0.1} />
+                      <StatCard title="Successful Rounds" value={totalCleared.toString()} icon={<CheckCircle size={24} />} color="bg-emerald-500" trend={`${totalCleared} Pass Rate`} delay={0.2} />
+                      <StatCard title="Awaiting Feedback" value={pendingReview.toString()} icon={<Clock size={24} />} color="bg-amber-500" delay={0.3} />
+                      <StatCard title="Total Contacts" value={hrRecords.length.toString()} icon={<Users size={24} />} color="bg-sky-500" delay={0.4} />
+                    </>
+                  )}
                 </div>
 
                 <div className="grid lg:grid-cols-12 gap-10">
@@ -340,7 +370,30 @@ export const AdminDashboard = () => {
                     </div>
 
                     <div className="space-y-6">
-                      {upcomingInterviews.length > 0 ? upcomingInterviews.map((interview, idx) => (
+                      {loading ? (
+                        // Loading skeleton for interviews
+                        <>
+                          {[0, 1, 2].map((idx) => (
+                            <div key={idx} className="p-8 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm">
+                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
+                                <div className="md:w-1/3 space-y-3">
+                                  <div className="h-3 bg-slate-200 rounded animate-pulse w-1/2"></div>
+                                  <div className="h-6 bg-slate-200 rounded animate-pulse w-3/4"></div>
+                                  <div className="h-3 bg-slate-100 rounded animate-pulse w-1/2 mt-4"></div>
+                                </div>
+                                <div className="flex-1 space-y-3 hidden md:block">
+                                  <div className="h-3 bg-slate-100 rounded animate-pulse w-1/3"></div>
+                                  <div className="h-4 bg-slate-200 rounded animate-pulse w-2/3"></div>
+                                </div>
+                                <div className="md:w-1/4 space-y-3">
+                                  <div className="h-3 bg-slate-100 rounded animate-pulse"></div>
+                                  <div className="h-6 bg-slate-200 rounded animate-pulse"></div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </>
+                      ) : upcomingInterviews.length > 0 ? upcomingInterviews.map((interview, idx) => (
                         <motion.div 
                           key={interview.id}
                           initial={{ opacity: 0, y: 20 }}

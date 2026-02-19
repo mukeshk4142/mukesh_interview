@@ -83,50 +83,33 @@ export const ManageHR = () => {
 
   // Real-time listener for Firestore
   useEffect(() => {
-    console.log("🔍 Current User:", currentUser?.email || "Not logged in");
-    console.log("🔍 User UID:", currentUser?.uid);
-    
     if (!currentUser) {
-      console.warn("⚠️ User not logged in, cannot fetch records");
       setLoading(false);
       return;
     }
 
     setLoading(true);
-    console.log("📡 Setting up Firestore listener for user:", currentUser.uid);
-    
     const q = query(
       collection(db, "hrRecords"),
       where("userId", "==", currentUser.uid)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      console.log("📊 Received snapshot with", snapshot.docs.length, "records");
       const records: HRRecord[] = [];
       snapshot.forEach((doc) => {
-        console.log("📄 Document:", doc.id, doc.data());
         records.push({
           ...doc.data() as HRRecord,
           id: doc.id
         });
       });
-      console.log("✅ Loaded", records.length, "records from Firestore");
       setHrRecords(records);
       setLoading(false);
     }, (error) => {
-      console.error("❌ Firestore Error:", error?.code, error?.message);
-      
-      if (error?.code === "permission-denied") {
-        console.error("🔐 PERMISSION DENIED - Firestore rules not set correctly!");
-      }
-      
+      console.error("Error loading records:", error);
       setLoading(false);
     });
 
-    return () => {
-      console.log("🧹 Cleaning up Firestore listener");
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, [currentUser]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -152,12 +135,11 @@ export const ManageHR = () => {
     }
 
     if (!currentUser) {
-      alert("❌ Please login first! Current User: " + (currentUser?.email || "Not logged in"));
+      alert("Please login first");
       return;
     }
 
     try {
-      console.log("📝 Saving record for user:", currentUser.uid);
       const recordData = {
         ...(formData as HRRecord),
         userId: currentUser.uid,
@@ -165,18 +147,11 @@ export const ManageHR = () => {
       };
 
       if (selectedRecord) {
-        // Update existing record
-        console.log("✏️ Updating record:", selectedRecord.id);
         await updateDoc(doc(db, "hrRecords", selectedRecord.id), recordData);
-        console.log("✅ Record updated successfully");
       } else {
-        // Add new record
-        console.log("➕ Adding new record to Firestore");
-        const docRef = await addDoc(collection(db, "hrRecords"), recordData);
-        console.log("✅ Record saved successfully with ID:", docRef.id);
+        await addDoc(collection(db, "hrRecords"), recordData);
       }
 
-      alert("✅ Data saved successfully! Syncing across devices...");
       setIsModalOpen(false);
       setSelectedRecord(null);
       setFormData({
@@ -188,13 +163,12 @@ export const ManageHR = () => {
         mailRevert: { status: "No", date: "" }
       });
     } catch (error: any) {
-      console.error("❌ Error saving record:", error);
-      const errorMessage = error?.code || error?.message || "Unknown error";
+      console.error("Error saving record:", error);
       
-      if (errorMessage.includes("permission")) {
-        alert("🔐 PERMISSION DENIED!\n\nFirestore Rules nahi set hain.\n\nKripaya Firebase Console jao:\n1. Firestore Database → Rules\n2. Is code ko paste karo:\n\nrules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /hrRecords/{document=**} {\n      allow read, write: if request.auth.uid == resource.data.userId;\n      allow create: if request.auth.uid != null;\n    }\n  }\n}\n\n3. Publish button click karo");
+      if (error?.code?.includes("permission")) {
+        alert("Permission denied. Please check Firestore rules.");
       } else {
-        alert(`❌ Error: ${errorMessage}\n\nBrowser console (F12) check karo for more details`);
+        alert("Error saving record. Please try again.");
       }
     }
   };
@@ -295,31 +269,6 @@ export const ManageHR = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-6 lg:p-12 selection:bg-indigo-100 selection:text-indigo-900">
-      {/* DEBUG INFO - Backend status check */}
-      <div className="mb-6 p-4 bg-slate-100 border-2 border-slate-300 rounded-lg text-xs font-mono">
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <span className="text-slate-500">👤 User:</span>
-            <div className={currentUser ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
-              {currentUser?.email || "❌ Not Logged In"}
-            </div>
-          </div>
-          <div>
-            <span className="text-slate-500">🔄 Loading:</span>
-            <div className={loading ? "text-amber-600 font-bold" : "text-green-600 font-bold"}>
-              {loading ? "⏳ Loading..." : "✅ Ready"}
-            </div>
-          </div>
-          <div>
-            <span className="text-slate-500">📊 Records:</span>
-            <div className="text-blue-600 font-bold">{hrRecords.length} found</div>
-          </div>
-        </div>
-        <div className="mt-3 text-slate-600">
-          💡 Open Console (F12) to see detailed logs for debugging
-        </div>
-      </div>
-
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
           <div className="bg-white rounded-3xl p-8 shadow-2xl">

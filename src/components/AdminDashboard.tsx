@@ -304,13 +304,37 @@ export const AdminDashboard = () => {
         <main className="flex-1 p-8 lg:p-12 overflow-x-hidden">
           <div className="max-w-7xl mx-auto space-y-12">
             
+            {/* Mobile Menu */}
+            <div className="lg:hidden mb-6 bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+              <div className="flex overflow-x-auto gap-2 pb-2">
+                {[
+                  { id: "overview", label: "Dashboard", icon: <LayoutDashboard size={16} /> },
+                  { id: "hr", label: "Recruiter Hub", icon: <Users size={16} /> },
+                  { id: "inbox", label: "Messages", icon: <Inbox size={16} /> },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => item.id === "hr" ? navigate("/admin/hr") : setActiveTab(item.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap text-xs font-semibold transition-all ${
+                      activeTab === item.id
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {activeTab === "overview" && (
               <>
                 {/* Stats Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
                   <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                    <h1 className="text-3xl font-bold mb-2 tracking-tight uppercase text-slate-900">Operations <span className="text-slate-500">Overview.</span></h1>
-                    <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Mukesh Kumar / Senior Python Developer</p>
+                    <h1 className="text-2xl md:text-3xl font-bold mb-2 tracking-tight text-slate-900">Admin Dashboard</h1>
+                    <p className="text-slate-500 font-semibold text-sm">Interview Pipeline Overview</p>
                   </motion.div>
                   <div className="flex items-center gap-4">
                     <Link to="/admin/hr" className="flex items-center space-x-3 px-8 py-4 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all text-[10px] font-black uppercase tracking-widest text-slate-600 shadow-sm">
@@ -325,7 +349,7 @@ export const AdminDashboard = () => {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-2 md:gap-4 lg:grid-cols-4 lg:gap-6">
                   {loading ? (
                     // Loading skeleton
                     <>
@@ -348,10 +372,10 @@ export const AdminDashboard = () => {
                 </div>
 
                 <div className="grid lg:grid-cols-12 gap-10">
-                  {/* Interviews Section */}
-                  <div className="lg:col-span-8 space-y-8">
+                  {/* Interviews Section - Full Width */}
+                  <div className="lg:col-span-12 space-y-8">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                      <h2 className="text-3xl font-black uppercase tracking-tighter text-slate-900">{timeframe === "history" ? "Archived" : "Upcoming"} <span className="text-slate-400 italic">Logs.</span></h2>
+                      <h2 className="text-xl md:text-3xl font-bold text-slate-900">Upcoming Interviews</h2>
                       <div className="flex bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
                         {[
                           { id: "thisWeek", label: "This Week" },
@@ -369,167 +393,66 @@ export const AdminDashboard = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-6">
-                      {loading ? (
-                        // Loading skeleton for interviews
-                        <>
-                          {[0, 1, 2].map((idx) => (
-                            <div key={idx} className="p-8 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm">
-                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
-                                <div className="md:w-1/3 space-y-3">
-                                  <div className="h-3 bg-slate-200 rounded animate-pulse w-1/2"></div>
-                                  <div className="h-6 bg-slate-200 rounded animate-pulse w-3/4"></div>
-                                  <div className="h-3 bg-slate-100 rounded animate-pulse w-1/2 mt-4"></div>
-                                </div>
-                                <div className="flex-1 space-y-3 hidden md:block">
-                                  <div className="h-3 bg-slate-100 rounded animate-pulse w-1/3"></div>
-                                  <div className="h-4 bg-slate-200 rounded animate-pulse w-2/3"></div>
-                                </div>
-                                <div className="md:w-1/4 space-y-3">
-                                  <div className="h-3 bg-slate-100 rounded animate-pulse"></div>
-                                  <div className="h-6 bg-slate-200 rounded animate-pulse"></div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </>
-                      ) : upcomingInterviews.length > 0 ? upcomingInterviews.map((interview, idx) => (
-                        <motion.div 
-                          key={interview.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: idx * 0.1 }}
-                          className="group relative overflow-hidden rounded-[2.5rem] bg-white border border-slate-200 hover:border-indigo-500 transition-all duration-500 p-8 shadow-sm hover:shadow-xl hover:shadow-slate-200"
-                        >
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
-                            {/* Company & Role */}
-                            <div className="md:w-1/3">
-                              <div className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-3">{interview.jobRole || "Python Role"}</div>
-                              <h4 className="text-2xl font-bold text-slate-900 uppercase tracking-tight group-hover:text-indigo-600 transition-colors leading-none">
-                                  {interview.companyName}
-                              </h4>
-                              <div className="mt-4 flex items-center space-x-3 text-slate-500">
-                                <div className="px-3 py-1 bg-slate-50 rounded-lg border border-slate-100 text-[10px] font-black uppercase tracking-widest text-indigo-600">
-                                  {interview.package || "N/A LPA"}
-                                </div>
-                                <span className="text-[10px] font-black uppercase tracking-widest">{interview.location || "Remote"}</span>
-                              </div>
-                            </div>
-
-                            {/* Recruiter Details */}
-                            <div className="flex-1 space-y-4 border-l border-slate-100 pl-10 hidden md:block">
-                              <div className="space-y-1">
-                                  <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none">Primary Recruiter</p>
-                                  <p className="text-sm font-bold text-slate-800">
-                                    {interview.hrName}
-                                  </p>
-                              </div>
-                              <div className="space-y-1">
-                                  <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none">Contact Channel</p>
-                                  <p className="text-sm font-bold text-slate-600">
-                                    {interview.contactNo}
-                                  </p>
-                              </div>
-                            </div>
-
-                            {/* Schedule Info */}
-                            <div className="md:w-1/4 flex flex-col items-start md:items-end justify-center">
-                              <div className="text-left md:text-right space-y-2">
-                                  <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Scheduled For</p>
-                                  <div className="text-xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
-                                    {formatDateWithDay(interview.interviewDate).split(' (')[0]}
-                                  </div>
-                                  <div className="inline-flex items-center px-3 py-1 bg-indigo-50 rounded-full text-[10px] font-black text-indigo-600 uppercase tracking-widest">
-                                    {formatTimeTo12H(interview.interviewTiming)}
-                                  </div>
-                              </div>
-                            </div>
-
-                            {/* Action Arrow */}
-                            <Link to="/admin/hr" className="absolute right-8 top-1/2 -translate-y-1/2 md:relative md:top-auto md:right-auto md:translate-y-0 p-5 bg-slate-50 rounded-[1.5rem] group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                              <ChevronRight size={24} />
-                            </Link>
-                          </div>
-                        </motion.div>
-                      )) : (
-                        <div className="py-24 text-center bg-white border border-dashed border-slate-200 rounded-[3rem] shadow-sm">
-                          <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
-                            <Calendar size={32} className="text-slate-300" />
-                          </div>
-                          <p className="text-slate-400 font-black uppercase tracking-widest text-xs mb-4">
-                            System status: No active logs found.
-                          </p>
-                          <Link to="/admin/hr" className="px-8 py-3 bg-indigo-50 border border-indigo-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-100 transition-all inline-block">
-                            Initiate New Protocol
-                          </Link>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Sidebar Insights */}
-                  <div className="lg:col-span-4 space-y-8">
-                    <h2 className="text-3xl font-black uppercase tracking-tighter text-slate-900">Recent <span className="text-indigo-600 italic">Feed.</span></h2>
-                    
-                    <div className="p-8 rounded-[3rem] bg-white border border-slate-200 shadow-sm space-y-8">
-                      {hrRecords.slice(-4).reverse().map((hr, idx) => (
-                        <div key={idx} className="flex items-center space-x-5 group cursor-pointer">
-                          <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all font-black text-sm shadow-sm">
-                            {hr.hrName?.charAt(0)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-bold text-sm text-slate-900 truncate">{hr.hrName}</div>
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest truncate">{hr.companyName}</div>
-                          </div>
-                          <div className="text-[9px] font-black text-slate-300 uppercase tracking-tighter">
-                            {formatDateToDDMMYYYY(hr.callingDate).split('-')[0]}-{formatDateToDDMMYYYY(hr.callingDate).split('-')[1]}
-                          </div>
-                        </div>
-                      ))}
-                      {hrRecords.length === 0 && <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest text-center py-10">Data sequence empty.</p>}
-                      
-                      <Link to="/admin/hr" className="w-full py-5 border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-all block text-center">
-                        Full Recruiter Hub
-                      </Link>
-                    </div>
-
-                    {/* Efficiency Index */}
-                    <div className="p-10 rounded-[3rem] bg-white border border-slate-200 relative overflow-hidden shadow-sm">
-                      <div className="absolute top-0 right-0 p-8">
-                          <Zap className="text-indigo-100" size={40} />
-                      </div>
-                      <h3 className="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-8">Pipeline Intensity</h3>
-                      <div className="space-y-6">
-                          <div className="space-y-3">
-                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                              <span className="text-slate-400">Current Iteration</span>
-                              <span className="text-slate-900 font-bold">{thisWeekCount} Units</span>
-                            </div>
-                            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                              <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min((thisWeekCount / 10) * 100, 100)}%` }} transition={{ duration: 1 }} className="h-full bg-indigo-600 shadow-sm" />
-                            </div>
-                          </div>
-                          <div className="space-y-3">
-                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                              <span className="text-slate-400">Next Iteration</span>
-                              <span className="text-slate-900 font-bold">{nextWeekCount} Units</span>
-                            </div>
-                            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                              <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min((nextWeekCount / 10) * 100, 100)}%` }} transition={{ duration: 1, delay: 0.2 }} className="h-full bg-sky-500 shadow-sm" />
-                            </div>
-                          </div>
-                      </div>
-                      
-                      <div className="mt-10 pt-10 border-t border-slate-100">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                                <CheckCircle size={18} className="text-emerald-600" />
-                            </div>
-                            <div>
-                                <div className="text-[10px] font-black uppercase tracking-widest text-slate-900">{totalCleared} Cleared</div>
-                                <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Final Phase Complete</div>
-                            </div>
-                          </div>
+                    {/* Table Format Display */}
+                    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                          <thead>
+                            <tr className="bg-slate-700 text-white border-b border-slate-600">
+                              <th className="px-2 md:px-4 py-2 md:py-3 font-semibold text-xs md:text-sm">Company</th>
+                              <th className="px-2 md:px-4 py-2 md:py-3 font-semibold text-xs md:text-sm hidden sm:table-cell">Role</th>
+                              <th className="px-2 md:px-4 py-2 md:py-3 font-semibold text-xs md:text-sm hidden md:table-cell">Recruiter</th>
+                              <th className="px-2 md:px-4 py-2 md:py-3 font-semibold text-xs md:text-sm hidden lg:table-cell">Phone</th>
+                              <th className="px-2 md:px-4 py-2 md:py-3 font-semibold text-xs md:text-sm">Package</th>
+                              <th className="px-2 md:px-4 py-2 md:py-3 font-semibold text-xs md:text-sm hidden md:table-cell">Location</th>
+                              <th className="px-2 md:px-4 py-2 md:py-3 font-semibold text-xs md:text-sm">Date</th>
+                              <th className="px-2 md:px-4 py-2 md:py-3 font-semibold text-xs md:text-sm hidden sm:table-cell">Time</th>
+                              <th className="px-2 md:px-4 py-2 md:py-3 font-semibold text-xs md:text-sm">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {loading ? (
+                              <>
+                                {[0, 1, 2].map((idx) => (
+                                  <tr key={idx} className="hover:bg-slate-50">
+                                    <td colSpan={9} className="px-2 md:px-4 py-2 md:py-3">
+                                      <div className="h-3 bg-slate-200 rounded animate-pulse w-full"></div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </>
+                            ) : upcomingInterviews.length > 0 ? (
+                              upcomingInterviews.map((interview) => (
+                                <tr key={interview.id} className="hover:bg-indigo-50 transition-colors group border-b border-slate-100">
+                                  <td className="px-2 md:px-4 py-2 md:py-3 font-semibold text-slate-900 text-sm">{interview.companyName}</td>
+                                  <td className="px-2 md:px-4 py-2 md:py-3 text-slate-600 hidden sm:table-cell text-sm">{interview.jobRole || "N/A"}</td>
+                                  <td className="px-2 md:px-4 py-2 md:py-3 text-slate-600 hidden md:table-cell text-sm">{interview.hrName}</td>
+                                  <td className="px-2 md:px-4 py-2 md:py-3 text-slate-600 hidden lg:table-cell text-sm font-mono">{interview.contactNo}</td>
+                                  <td className="px-2 md:px-4 py-2 md:py-3 font-semibold text-green-600 text-sm">{interview.package || "N/A"}</td>
+                                  <td className="px-2 md:px-4 py-2 md:py-3 text-slate-600 hidden md:table-cell text-sm">{interview.location || "Remote"}</td>
+                                  <td className="px-2 md:px-4 py-2 md:py-3 text-slate-700 font-semibold text-sm">{formatDateToDDMMYYYY(interview.interviewDate)}</td>
+                                  <td className="px-2 md:px-4 py-2 md:py-3 text-slate-600 hidden sm:table-cell font-semibold text-sm">{formatTimeTo12H(interview.interviewTiming)}</td>
+                                  <td className="px-2 md:px-4 py-2 md:py-3">
+                                    <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                                      interview.interviewStatus === "Pass" ? "bg-green-100 text-green-700" :
+                                      interview.interviewStatus === "Fail" ? "bg-red-100 text-red-700" :
+                                      interview.interviewStatus === "Complete" ? "bg-blue-100 text-blue-700" :
+                                      "bg-amber-100 text-amber-700"
+                                    }`}>
+                                      {interview.interviewStatus}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan={9} className="px-4 py-8 text-center">
+                                  <p className="text-slate-400 font-semibold text-sm">No interviews scheduled for this period</p>
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>

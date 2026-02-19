@@ -689,9 +689,18 @@ export const ManageHR = () => {
                     </div>
                   </div>
 
+                  {selectedRecord.finalStatus && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">Final Resolution</p>
+                      <p className="text-sm text-slate-700 font-bold bg-emerald-50 p-4 rounded-xl border-l-4 border-emerald-600 leading-relaxed break-words shadow-sm">
+                        {selectedRecord.finalStatus}
+                      </p>
+                    </div>
+                  )}
+
                   {selectedRecord.remarkNote && (
                      <div className="space-y-2">
-                       <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">Internal Intelligence</p>
+                       <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">Internal Notes & Remarks</p>
                        <p className="text-sm text-slate-600 font-bold bg-slate-50 p-5 rounded-xl md:rounded-2xl border-l-4 border-indigo-600 leading-relaxed break-words italic shadow-sm">
                           "{selectedRecord.remarkNote}"
                        </p>

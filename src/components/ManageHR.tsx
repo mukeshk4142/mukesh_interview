@@ -645,27 +645,27 @@ export const ManageHR = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-slate-500 uppercase">Contact Protocol</p>
-                      <p className="font-semibold flex items-center gap-2 text-slate-900 text-sm md:text-base"><Phone size={14} className="text-indigo-600 shrink-0" /> {selectedRecord.contactNo}</p>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">Contact Protocol</p>
+                      <p className="font-bold flex items-center gap-2 text-slate-900 text-sm md:text-base"><Phone size={14} className="text-indigo-600 shrink-0" /> {selectedRecord.contactNo}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-slate-500 uppercase">Regional Sector</p>
-                      <p className="font-semibold flex items-center gap-2 text-slate-900 text-sm md:text-base"><MapPin size={14} className="text-sky-600 shrink-0" /> {selectedRecord.location}</p>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">Regional Sector</p>
+                      <p className="font-bold flex items-center gap-2 text-slate-900 text-sm md:text-base"><MapPin size={14} className="text-sky-600 shrink-0" /> {selectedRecord.location}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-slate-500 uppercase">Annual Yield (LPA)</p>
-                      <p className="font-semibold text-emerald-600 text-sm md:text-base">{selectedRecord.package || "NOT_DISCLOSED"}</p>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">Annual Yield (LPA)</p>
+                      <p className="font-black text-emerald-600 text-sm md:text-base">{selectedRecord.package || "NOT_DISCLOSED"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-slate-500 uppercase">Interview Schedule</p>
-                      <p className="font-semibold flex items-center gap-2 text-slate-900 text-sm md:text-base"><Calendar size={14} className="text-purple-600 shrink-0" /> {formatDateToDDMMYYYY(selectedRecord.interviewDate)} @ {formatTimeTo12H(selectedRecord.interviewTiming)}</p>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">Interview Schedule</p>
+                      <p className="font-bold flex items-center gap-2 text-slate-900 text-sm md:text-base"><Calendar size={14} className="text-purple-600 shrink-0" /> {formatDateToDDMMYYYY(selectedRecord.interviewDate)} @ {formatTimeTo12H(selectedRecord.interviewTiming)}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-slate-500 uppercase">First Connect Date</p>
-                      <p className="font-semibold flex items-center gap-2 text-slate-900 text-sm md:text-base"><Calendar size={14} className="text-amber-600 shrink-0" /> {formatDateToDDMMYYYY(selectedRecord.callingDate)}</p>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">First Connect Date</p>
+                      <p className="font-bold flex items-center gap-2 text-slate-900 text-sm md:text-base"><Calendar size={14} className="text-amber-600 shrink-0" /> {formatDateToDDMMYYYY(selectedRecord.callingDate)}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-slate-500 uppercase">Mail Handshake Log</p>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">Mail Handshake Log</p>
                       <div className="flex flex-col gap-1 text-[10px] md:text-xs font-black uppercase">
                         <span className="flex items-center gap-1 text-emerald-600"><Mail size={12} /> RECV: {selectedRecord.mailReceived.status} ({formatDateToDDMMYYYY(selectedRecord.mailReceived.date)})</span>
                         <span className="flex items-center gap-1 text-indigo-600"><Mail size={12} /> RVRT: {selectedRecord.mailRevert.status} ({formatDateToDDMMYYYY(selectedRecord.mailRevert.date)})</span>
@@ -674,7 +674,7 @@ export const ManageHR = () => {
                   </div>
 
                   <div className="bg-slate-50 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-slate-100 space-y-4">
-                    <p className="text-xs font-semibold text-slate-500 uppercase\">Pipeline Velocity Summary</p>
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">Pipeline Velocity Summary</p>
                     <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2 scrollbar-none">
                       {["R1", "R2", "R3", "GLOBAL"].map((step, idx) => {
                         const val = idx === 0 ? selectedRecord.r1 : idx === 1 ? selectedRecord.r2 : idx === 2 ? selectedRecord.r3 : selectedRecord.interviewStatus;
@@ -691,7 +691,7 @@ export const ManageHR = () => {
 
                   {selectedRecord.finalStatus && (
                     <div className="space-y-2">
-                      <p className="text-xs font-semibold text-slate-500 uppercase">Final Resolution</p>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">Final Resolution</p>
                       <p className="text-sm text-slate-700 font-bold bg-emerald-50 p-4 rounded-xl border-l-4 border-emerald-600 leading-relaxed break-words shadow-sm">
                         {selectedRecord.finalStatus}
                       </p>
@@ -700,7 +700,7 @@ export const ManageHR = () => {
 
                   {selectedRecord.remarkNote && (
                      <div className="space-y-2">
-                       <p className="text-xs font-semibold text-slate-500 uppercase">Internal Notes & Remarks</p>
+                       <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">Internal Notes & Remarks</p>
                        <p className="text-sm text-slate-600 font-bold bg-slate-50 p-5 rounded-xl md:rounded-2xl border-l-4 border-indigo-600 leading-relaxed break-words italic shadow-sm">
                           "{selectedRecord.remarkNote}"
                        </p>

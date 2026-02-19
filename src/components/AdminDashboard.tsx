@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { formatDateToDDMMYYYY, formatDateWithDayAndMonth, formatTimeTo12H } from "../utils/date";
+import { db, auth } from "../firebase";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 
 const DashboardNavbar = () => {
   return (
@@ -98,11 +100,33 @@ export const AdminDashboard = () => {
   const [hrRecords, setHrRecords] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [timeframe, setTimeframe] = useState<"thisWeek" | "nextWeek" | "history">("thisWeek");
+  const currentUser = auth.currentUser;
 
+  // Load HR records from Firestore in real-time
   useEffect(() => {
-    const saved = localStorage.getItem("hr_records");
-    if (saved) setHrRecords(JSON.parse(saved));
-    
+    if (!currentUser) return;
+
+    const q = query(
+      collection(db, "hrRecords"),
+      where("userId", "==", currentUser.uid)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const records: any[] = [];
+      snapshot.forEach((doc) => {
+        records.push({
+          ...doc.data(),
+          id: doc.id
+        });
+      });
+      setHrRecords(records);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser]);
+
+  // Load messages from localStorage
+  useEffect(() => {
     const savedMessages = localStorage.getItem("contact_messages");
     if (savedMessages) setMessages(JSON.parse(savedMessages));
   }, []);

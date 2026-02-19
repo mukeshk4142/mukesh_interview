@@ -21,10 +21,23 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatDateToDDMMYYYY, formatTimeTo12H } from "../utils/date";
+import { db, auth } from "../firebase";
+import { 
+  collection, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  query, 
+  where, 
+  onSnapshot 
+} from "firebase/firestore";
 
 // Types
 interface HRRecord {
   id: string;
+  userId?: string;
+  timestamp?: Date;
   hrName: string;
   contactNo: string;
   callingDate: string;
@@ -57,6 +70,8 @@ export const ManageHR = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<HRRecord | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const currentUser = auth.currentUser;
   const [formData, setFormData] = useState<Partial<HRRecord>>({
     r1: "Process",
     r2: "Process",
@@ -66,17 +81,36 @@ export const ManageHR = () => {
     mailRevert: { status: "No", date: "" }
   });
 
-  // Load from local storage
+  // Real-time listener for Firestore
   useEffect(() => {
-    const saved = localStorage.getItem("hr_records");
-    if (saved) setHrRecords(JSON.parse(saved));
-  }, []);
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
 
-  // Save to local storage
-  const saveRecords = (records: HRRecord[]) => {
-    setHrRecords(records);
-    localStorage.setItem("hr_records", JSON.stringify(records));
-  };
+    setLoading(true);
+    const q = query(
+      collection(db, "hrRecords"),
+      where("userId", "==", currentUser.uid)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const records: HRRecord[] = [];
+      snapshot.forEach((doc) => {
+        records.push({
+          ...doc.data() as HRRecord,
+          id: doc.id
+        });
+      });
+      setHrRecords(records);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error loading records:", error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -92,7 +126,7 @@ export const ManageHR = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.contactNo && formData.contactNo.length > 10) {
@@ -100,33 +134,50 @@ export const ManageHR = () => {
       return;
     }
 
-    const newRecord: HRRecord = {
-      ...(formData as HRRecord),
-      id: selectedRecord?.id || Date.now().toString()
-    };
-
-    if (selectedRecord) {
-      const updated = hrRecords.map(r => r.id === selectedRecord.id ? newRecord : r);
-      saveRecords(updated);
-    } else {
-      saveRecords([...hrRecords, newRecord]);
+    if (!currentUser) {
+      alert("Please login first");
+      return;
     }
 
-    setIsModalOpen(false);
-    setSelectedRecord(null);
-    setFormData({
-      r1: "Process",
-      r2: "Process",
-      r3: "Process",
-      interviewStatus: "Process",
-      mailReceived: { status: "No", date: "" },
-      mailRevert: { status: "No", date: "" }
-    });
+    try {
+      const recordData = {
+        ...(formData as HRRecord),
+        userId: currentUser.uid,
+        timestamp: new Date()
+      };
+
+      if (selectedRecord) {
+        // Update existing record
+        await updateDoc(doc(db, "hrRecords", selectedRecord.id), recordData);
+      } else {
+        // Add new record
+        await addDoc(collection(db, "hrRecords"), recordData);
+      }
+
+      setIsModalOpen(false);
+      setSelectedRecord(null);
+      setFormData({
+        r1: "Process",
+        r2: "Process",
+        r3: "Process",
+        interviewStatus: "Process",
+        mailReceived: { status: "No", date: "" },
+        mailRevert: { status: "No", date: "" }
+      });
+    } catch (error) {
+      console.error("Error saving record:", error);
+      alert("Error saving record. Please try again.");
+    }
   };
 
-  const deleteRecord = (id: string) => {
+  const deleteRecord = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this record?")) {
-      saveRecords(hrRecords.filter(r => r.id !== id));
+      try {
+        await deleteDoc(doc(db, "hrRecords", id));
+      } catch (error) {
+        console.error("Error deleting record:", error);
+        alert("Error deleting record. Please try again.");
+      }
     }
   };
 
@@ -215,6 +266,14 @@ export const ManageHR = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-6 lg:p-12 selection:bg-indigo-100 selection:text-indigo-900">
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 shadow-2xl">
+            <div className="animate-spin w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full mx-auto"></div>
+            <p className="mt-4 text-slate-600 font-semibold text-center">Loading your records...</p>
+          </div>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
@@ -402,26 +461,26 @@ export const ManageHR = () => {
                   </div>
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Candidate / HR Name</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">HR Name</label>
                       <input required name="hrName" value={formData.hrName || ""} onChange={handleInputChange} type="text" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 placeholder:text-slate-300" placeholder="FULL NAME" />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Contact Protocol (10 DIGIT)</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Contact No. (10 DIGIT)</label>
                       <input required name="contactNo" value={formData.contactNo || ""} onChange={handleInputChange} type="tel" maxLength={10} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 placeholder:text-slate-300" placeholder="+91 XXXXX XXXXX" />
                     </div>
                   </div>
                   <div className="grid md:grid-cols-3 gap-6">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Initial Contact Date</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Calling Date</label>
                       <input name="callingDate" value={formData.callingDate || ""} onChange={handleInputChange} type="date" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900" />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Organization Name</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Company Name</label>
                       <input required name="companyName" value={formData.companyName || ""} onChange={handleInputChange} type="text" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 placeholder:text-slate-300" placeholder="COMPANY NAME" />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Deployment Location</label>
-                      <input name="location" value={formData.location || ""} onChange={handleInputChange} type="text" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 placeholder:text-slate-300" placeholder="CITY / REMOTE" />
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1"> Work Location</label>
+                      <input name="location" value={formData.location || ""} onChange={handleInputChange} type="text" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 placeholder:text-slate-300" placeholder="City Name" />
                     </div>
                   </div>
                 </div>
@@ -433,7 +492,7 @@ export const ManageHR = () => {
                   </div>
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Functional Designation</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Designation</label>
                       <input name="jobRole" value={formData.jobRole || ""} onChange={handleInputChange} type="text" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 placeholder:text-slate-300" placeholder="e.g. PYTHON LEAD" />
                     </div>
                     <div className="space-y-2">
@@ -446,25 +505,25 @@ export const ManageHR = () => {
                 {/* Section 3: Communication Status */}
                 <div className="space-y-6">
                   <div className="flex items-center space-x-2 text-purple-600 font-black uppercase tracking-widest text-[10px]">
-                    <Mail size={14} /> <span>TRANSMISSION PROTOCOLS</span>
+                    <Mail size={14} /> <span>Mails Received & Revert</span>
                   </div>
                   <div className="grid md:grid-cols-2 gap-8 bg-slate-50 p-6 rounded-3xl border border-slate-100">
                     <div className="space-y-4">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Inbound Mail Received?</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Mail Received Status</label>
                       <div className="flex items-center gap-4">
                         <select name="mailReceived.status" value={formData.mailReceived?.status} onChange={handleInputChange} className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none flex-1">
-                          <option value="No">NEGATIVE</option>
-                          <option value="Yes">AFFIRMATIVE</option>
+                          <option value="No">NO</option>
+                          <option value="Yes">YES</option>
                         </select>
                         <input name="mailReceived.date" value={formData.mailReceived?.date} onChange={handleInputChange} type="date" className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none flex-1" />
                       </div>
                     </div>
                     <div className="space-y-4">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Outbound Revert Date?</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Mail Revert Status</label>
                       <div className="flex items-center gap-4">
                         <select name="mailRevert.status" value={formData.mailRevert?.status} onChange={handleInputChange} className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none flex-1">
-                          <option value="No">PENDING</option>
-                          <option value="Yes">COMPLETED</option>
+                          <option value="No">NO</option>
+                          <option value="Yes">YES</option>
                         </select>
                         <input name="mailRevert.date" value={formData.mailRevert?.date} onChange={handleInputChange} type="date" className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none flex-1" />
                       </div>
@@ -475,14 +534,14 @@ export const ManageHR = () => {
                 {/* Section 4: Rounds & Status */}
                 <div className="space-y-6">
                   <div className="flex items-center space-x-2 text-amber-600 font-black uppercase tracking-widest text-[10px]">
-                    <AlertCircle size={14} /> <span>PIPELINE VELOCITY CONTROL</span>
+                    <AlertCircle size={14} /> <span>INTERVIEW PHASE & STATUS</span>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
                       { label: "ROUND_01", name: "r1" },
                       { label: "ROUND_02", name: "r2" },
                       { label: "ROUND_03", name: "r3" },
-                      { label: "GLOBAL_STATUS", name: "interviewStatus" }
+                      { label: "FINAL STATUS", name: "interviewStatus" }
                     ].map((item) => (
                       <div key={item.name} className="space-y-2">
                         <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">{item.label}</label>
@@ -495,7 +554,7 @@ export const ManageHR = () => {
                           <option value="Process">IN_PROCESS</option>
                           <option value="Complete">COMPLETED</option>
                           <option value="Pass">SUCCESSFUL</option>
-                          <option value="Fail">TERMINATED</option>
+                          <option value="Fail">FAILED</option>
                         </select>
                       </div>
                     ))}
@@ -507,7 +566,7 @@ export const ManageHR = () => {
                       <input name="interviewDate" value={formData.interviewDate || ""} onChange={handleInputChange} type="date" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900" />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Interview Timeline (24H)</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Interview Time (12Hr)</label>
                       <input name="interviewTiming" value={formData.interviewTiming || ""} onChange={handleInputChange} type="time" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900" />
                     </div>
                   </div>
@@ -521,7 +580,7 @@ export const ManageHR = () => {
                       <input name="finalStatus" value={formData.finalStatus || ""} onChange={handleInputChange} type="text" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 placeholder:text-slate-300" placeholder="e.g. OFFER GENERATED @ 20 LPA" />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">INTERNAL AUDIT NOTES / REMARKS</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">REMARKS & Note</label>
                       <textarea name="remarkNote" value={formData.remarkNote || ""} onChange={handleInputChange} rows={4} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:border-indigo-500 outline-none transition-all resize-none font-bold text-slate-900 placeholder:text-slate-300" placeholder="ADDITIONAL INTELLIGENCE DATA..."></textarea>
                     </div>
                   </div>

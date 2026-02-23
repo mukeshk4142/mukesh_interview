@@ -30,8 +30,7 @@ import {
   doc, 
   query, 
   where, 
-  onSnapshot,
-  orderBy 
+  onSnapshot
 } from "firebase/firestore";
 
 // Types
@@ -93,8 +92,7 @@ export const ManageHR = () => {
       setLoading(true);
       const q = query(
         collection(db, "hrRecords"),
-        where("userId", "==", user.uid),
-        orderBy("timestamp", "desc")
+        where("userId", "==", user.uid)
       );
 
       const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -104,6 +102,12 @@ export const ManageHR = () => {
             ...doc.data() as HRRecord,
             id: doc.id
           });
+        });
+        // Sort by timestamp descending on client side
+        records.sort((a, b) => {
+          const timeA = a.timestamp ? new Date(a.timestamp as any).getTime() : 0;
+          const timeB = b.timestamp ? new Date(b.timestamp as any).getTime() : 0;
+          return timeB - timeA;
         });
         setHrRecords(records);
         setLoading(false);

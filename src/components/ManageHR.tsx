@@ -72,7 +72,6 @@ export const ManageHR = () => {
   const [selectedRecord, setSelectedRecord] = useState<HRRecord | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(auth.currentUser);
   const [formData, setFormData] = useState<Partial<HRRecord>>({
     r1: "Process",
     r2: "Process",
@@ -82,50 +81,42 @@ export const ManageHR = () => {
     mailRevert: { status: "No", date: "" }
   });
 
-  // Initialize auth state - ensures data loads on refresh
+  // Real-time listener for Firestore - wait for auth first
   useEffect(() => {
-    setLoading(true);
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
-      setCurrentUser(user);
       if (!user) {
         setHrRecords([]);
         setLoading(false);
+        return;
       }
+
+      setLoading(true);
+      const q = query(
+        collection(db, "hrRecords"),
+        where("userId", "==", user.uid),
+        orderBy("timestamp", "desc")
+      );
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const records: HRRecord[] = [];
+        snapshot.forEach((doc) => {
+          records.push({
+            ...doc.data() as HRRecord,
+            id: doc.id
+          });
+        });
+        setHrRecords(records);
+        setLoading(false);
+      }, (error) => {
+        console.error("Error loading records:", error);
+        setLoading(false);
+      });
+
+      return () => unsubscribe();
     });
+
     return () => unsubscribeAuth();
   }, []);
-
-  // Real-time listener for Firestore
-  useEffect(() => {
-    if (!currentUser) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    const q = query(
-      collection(db, "hrRecords"),
-      where("userId", "==", currentUser.uid),
-      orderBy("timestamp", "desc")
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const records: HRRecord[] = [];
-      snapshot.forEach((doc) => {
-        records.push({
-          ...doc.data() as HRRecord,
-          id: doc.id
-        });
-      });
-      setHrRecords(records);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error loading records:", error);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [currentUser]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -149,7 +140,7 @@ export const ManageHR = () => {
       return;
     }
 
-    if (!currentUser) {
+    if (!auth.currentUser) {
       alert("Please login first");
       return;
     }
@@ -157,7 +148,7 @@ export const ManageHR = () => {
     try {
       const recordData = {
         ...(formData as HRRecord),
-        userId: currentUser.uid,
+        userId: auth.currentUser.uid,
         timestamp: new Date()
       };
 

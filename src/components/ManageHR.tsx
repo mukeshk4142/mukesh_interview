@@ -30,7 +30,8 @@ import {
   doc, 
   query, 
   where, 
-  onSnapshot
+  onSnapshot,
+  serverTimestamp
 } from "firebase/firestore";
 
 // Types
@@ -103,11 +104,16 @@ export const ManageHR = () => {
             id: doc.id
           });
         });
-        // Sort by timestamp descending on client side
+        // Sort by timestamp descending (newest first)
         records.sort((a, b) => {
-          const timeA = a.timestamp ? new Date(a.timestamp as any).getTime() : 0;
-          const timeB = b.timestamp ? new Date(b.timestamp as any).getTime() : 0;
-          return timeB - timeA;
+          const getTime = (timestamp: any) => {
+            if (!timestamp) return 0;
+            // Handle Firestore Timestamp object
+            if (timestamp.toMillis) return timestamp.toMillis();
+            // Handle Date object or ISO string
+            return new Date(timestamp as any).getTime();
+          };
+          return getTime(b.timestamp) - getTime(a.timestamp);
         });
         setHrRecords(records);
         setLoading(false);
@@ -159,10 +165,10 @@ export const ManageHR = () => {
         // Update: don't change timestamp
         await updateDoc(doc(db, "hrRecords", selectedRecord.id), recordData);
       } else {
-        // New record: set timestamp
+        // New record: use Firestore server timestamp
         await addDoc(collection(db, "hrRecords"), {
           ...recordData,
-          timestamp: new Date()
+          timestamp: serverTimestamp()
         });
       }
 

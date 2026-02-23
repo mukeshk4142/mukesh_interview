@@ -469,7 +469,7 @@ export const ManageHR = () => {
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Contact No. (10 DIGIT)</label>
-                      <input required name="contactNo" value={formData.contactNo || ""} onChange={handleInputChange} type="tel" maxLength={14} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 placeholder:text-slate-300" placeholder="+91 XXXXX XXXXX" />
+                      <input required name="contactNo" value={formData.contactNo || ""} onChange={handleInputChange} type="tel" maxLength={10} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 placeholder:text-slate-300" placeholder="+91 XXXXX XXXXX" />
                     </div>
                   </div>
                   <div className="grid md:grid-cols-3 gap-6">
@@ -643,61 +643,6 @@ export const ManageHR = () => {
                     <p className="text-indigo-600 font-semibold flex items-center gap-2 mt-1 text-sm md:text-base uppercase tracking-wide"><Building2 size={16} className="shrink-0" /> {selectedRecord.companyName} • {selectedRecord.jobRole}</p>
                   </div>
 
-                  {/* Complete Details Summary A-Z */}
-                  <div className="bg-indigo-50 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-indigo-200 space-y-4">
-                    <p className="text-[10px] uppercase tracking-[0.3em] text-indigo-600 font-black">Complete Record Details</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 text-xs md:text-sm">
-                      <div className="bg-white p-3 rounded-lg">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">HR Name</span>
-                        <p className="font-bold text-slate-900 mt-1">{selectedRecord.hrName}</p>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Contact No</span>
-                        <p className="font-bold text-slate-900 mt-1">{selectedRecord.contactNo}</p>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Company</span>
-                        <p className="font-bold text-slate-900 mt-1">{selectedRecord.companyName}</p>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Location</span>
-                        <p className="font-bold text-slate-900 mt-1">{selectedRecord.location || "NOT_SPECIFIED"}</p>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Job Role</span>
-                        <p className="font-bold text-slate-900 mt-1">{selectedRecord.jobRole}</p>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Package (LPA)</span>
-                        <p className="font-bold text-emerald-600 mt-1">{selectedRecord.package || "NOT_DISCLOSED"}</p>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Calling Date</span>
-                        <p className="font-bold text-slate-900 mt-1">{formatDateToDDMMYYYY(selectedRecord.callingDate) || "NOT_SET"}</p>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Interview Date</span>
-                        <p className="font-bold text-slate-900 mt-1">{formatDateToDDMMYYYY(selectedRecord.interviewDate) || "NOT_SCHEDULED"}</p>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Interview Time</span>
-                        <p className="font-bold text-slate-900 mt-1">{selectedRecord.interviewTiming ? formatTimeTo12H(selectedRecord.interviewTiming) : "NOT_SET"}</p>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Mail Received</span>
-                        <p className="font-bold text-emerald-600 mt-1">{selectedRecord.mailReceived.status} ({formatDateToDDMMYYYY(selectedRecord.mailReceived.date) || "No Date"})</p>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Mail Revert</span>
-                        <p className="font-bold text-indigo-600 mt-1">{selectedRecord.mailRevert.status} ({formatDateToDDMMYYYY(selectedRecord.mailRevert.date) || "No Date"})</p>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Final Status</span>
-                        <p className="font-bold text-slate-900 mt-1">{selectedRecord.finalStatus || "PENDING"}</p>
-                      </div>
-                    </div>
-                  </div>
-
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                     <div className="space-y-1">
                       <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">Contact Protocol</p>
@@ -753,17 +698,14 @@ export const ManageHR = () => {
                     </div>
                   )}
 
-                  {/* Remarks Section - Always Visible */}
-                  <div className="space-y-2">
-                    <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">Internal Notes & Remarks</p>
-                    <div className="text-sm text-slate-600 font-bold bg-slate-50 p-5 rounded-xl md:rounded-2xl border-l-4 border-indigo-600 leading-relaxed break-words italic shadow-sm min-h-[80px] flex items-center">
-                      {selectedRecord.remarkNote && selectedRecord.remarkNote.trim() ? (
-                        <span>"{selectedRecord.remarkNote}"</span>
-                      ) : (
-                        <span className="text-slate-400 italic">No remarks added for this record</span>
-                      )}
-                    </div>
-                  </div>
+                  {selectedRecord.remarkNote && (
+                     <div className="space-y-2">
+                       <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-black">Internal Notes & Remarks</p>
+                       <p className="text-sm text-slate-600 font-bold bg-slate-50 p-5 rounded-xl md:rounded-2xl border-l-4 border-indigo-600 leading-relaxed break-words italic shadow-sm">
+                          "{selectedRecord.remarkNote}"
+                       </p>
+                     </div>
+                  )}
 
                   <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-4 sticky bottom-0 bg-white pb-4 z-20">
                     <button onClick={() => { setIsViewModalOpen(false); openEditModal(selectedRecord); }} className="flex-1 py-4 bg-slate-100 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-200 transition-all flex items-center justify-center gap-2">

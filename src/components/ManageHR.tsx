@@ -152,14 +152,18 @@ export const ManageHR = () => {
     try {
       const recordData = {
         ...(formData as HRRecord),
-        userId: auth.currentUser.uid,
-        timestamp: new Date()
+        userId: auth.currentUser.uid
       };
 
       if (selectedRecord) {
+        // Update: don't change timestamp
         await updateDoc(doc(db, "hrRecords", selectedRecord.id), recordData);
       } else {
-        await addDoc(collection(db, "hrRecords"), recordData);
+        // New record: set timestamp
+        await addDoc(collection(db, "hrRecords"), {
+          ...recordData,
+          timestamp: new Date()
+        });
       }
 
       setIsModalOpen(false);

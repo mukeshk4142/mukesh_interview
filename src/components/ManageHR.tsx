@@ -257,7 +257,7 @@ export const ManageHR = () => {
     document.body.removeChild(link);
   };
 
-  const filteredRecords = [...hrRecords].reverse().filter(r => {
+  const filteredRecords = [...hrRecords].filter(r => {
     const query = searchQuery.toLowerCase();
     return (
       r.hrName.toLowerCase().includes(query) ||

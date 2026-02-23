@@ -30,7 +30,8 @@ import {
   doc, 
   query, 
   where, 
-  onSnapshot 
+  onSnapshot,
+  orderBy 
 } from "firebase/firestore";
 
 // Types
@@ -91,7 +92,8 @@ export const ManageHR = () => {
     setLoading(true);
     const q = query(
       collection(db, "hrRecords"),
-      where("userId", "==", currentUser.uid)
+      where("userId", "==", currentUser.uid),
+      orderBy("timestamp", "desc")
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -365,7 +367,7 @@ export const ManageHR = () => {
                 {filteredRecords.length > 0 ? filteredRecords.map((record, index) => (
                   <tr key={record.id} className="hover:bg-slate-50 transition-all group">
                     <td className="px-6 py-5">
-                       <span className="text-[10px] font-black text-slate-400 group-hover:text-indigo-600 transition-colors">#{ (filteredRecords.length - index).toString().padStart(3, '0') }</span>
+                       <span className="text-[10px] font-black text-slate-400 group-hover:text-indigo-600 transition-colors">#{ (filteredRecords.length - index).toString().padStart(2, '0') }</span>
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex flex-col">

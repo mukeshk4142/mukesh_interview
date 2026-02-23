@@ -72,7 +72,7 @@ export const ManageHR = () => {
   const [selectedRecord, setSelectedRecord] = useState<HRRecord | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
-  const currentUser = auth.currentUser;
+  const [currentUser, setCurrentUser] = useState(auth.currentUser);
   const [formData, setFormData] = useState<Partial<HRRecord>>({
     r1: "Process",
     r2: "Process",
@@ -81,6 +81,19 @@ export const ManageHR = () => {
     mailReceived: { status: "No", date: "" },
     mailRevert: { status: "No", date: "" }
   });
+
+  // Initialize auth state - ensures data loads on refresh
+  useEffect(() => {
+    setLoading(true);
+    const unsubscribeAuth = auth.onAuthStateChanged((user) => {
+      setCurrentUser(user);
+      if (!user) {
+        setHrRecords([]);
+        setLoading(false);
+      }
+    });
+    return () => unsubscribeAuth();
+  }, []);
 
   // Real-time listener for Firestore
   useEffect(() => {

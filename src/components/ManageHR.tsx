@@ -378,6 +378,7 @@ export const ManageHR = () => {
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-indigo-300 border-r border-slate-800/50">ROLE_SPEC</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-amber-400 text-center border-r border-slate-800/50">PIPELINE</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-purple-300 border-r border-slate-800/50">LOG_TIME</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-cyan-300 border-r border-slate-800/50">ENTRY_DATE</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-white text-right">PROTOCOL</th>
                 </tr>
               </thead>
@@ -429,6 +430,20 @@ export const ManageHR = () => {
                         </div>
                       ) : <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.2em] italic">QUEUE_AWAIT</span>}
                     </td>
+                    <td className="px-6 py-5">
+                      {record.timestamp && (() => {
+                        const date = (record.timestamp as any).toMillis ? new Date((record.timestamp as any).toMillis()) : new Date(record.timestamp as any);
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const year = date.getFullYear();
+                        const daysOld = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+                        let badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                        if (daysOld > 7) badgeColor = 'bg-sky-50 text-sky-700 border-sky-200';
+                        if (daysOld > 30) badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
+                        if (daysOld > 60) badgeColor = 'bg-red-50 text-red-700 border-red-200';
+                        return <span className={`px-3 py-1 rounded-lg text-[9px] font-black border uppercase tracking-wide ${badgeColor}`}>{day}-{month}-{year}</span>;
+                      })()}
+                    </td>
                     <td className="px-6 py-5 text-right">
                       <div className="flex items-center justify-end space-x-2">
                         <button onClick={() => openViewModal(record)} className="p-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm"><Eye size={14} /></button>
@@ -439,7 +454,7 @@ export const ManageHR = () => {
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan={7} className="px-6 py-32 text-center">
+                    <td colSpan={8} className="px-6 py-32 text-center">
                       <div className="flex flex-col items-center justify-center space-y-6">
                          <div className="p-10 bg-slate-50 rounded-[2.5rem] border border-dashed border-slate-200"><Search size={48} className="text-slate-300" /></div>
                          <p className="text-slate-400 font-black uppercase tracking-[0.3em] text-xs">No matching telemetry data found in core.</p>
